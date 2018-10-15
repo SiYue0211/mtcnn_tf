@@ -29,7 +29,7 @@ def gen_landmark_data(srcTxt, net, augment=False):
         os.makedirs(saveImagesFolder)
     saveF = open(join(saveFolder, "landmark.txt"), 'w')
     imageCnt = 0
-    # image_path bbox landmark(5*2)
+    # image_path bbox landmark(5*2)， use yield to save memory
     for (imgPath, bbox, landmarkGt) in getBboxLandmarkFromTxt(srcTxt):
         F_imgs = []
         F_landmarks = []        
@@ -147,5 +147,5 @@ if __name__ == "__main__":
     if stage not in ['pnet', 'rnet', 'onet']:
         raise Exception("Please specify stage by --stage=pnet or rnet or onet")
     # augment: data augmentation
-    gen_landmark_data("dataset/trainImageList.txt", stage, augment=True)
-
+    gen_landmark_data("dataset/train/trainImageList.txt", stage, augment=True)
+    # gen_landmark_data("dataset/train/trainImageListTiny.txt", stage, augment=True)

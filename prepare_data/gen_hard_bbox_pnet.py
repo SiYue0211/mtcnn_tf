@@ -3,7 +3,9 @@ import sys
 import numpy as np
 import cv2
 import os
+# rootPath is like:/data/resys/code/mtcnn_tf
 rootPath = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+
 sys.path.insert(0, rootPath)
 from tools.common_utils import IoU
 
@@ -29,14 +31,18 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
         annotation = annotation.strip().split(' ')
         # image path
         imPath = annotation[0]
-        # boxed change to float type
+        # boxed change to float type, bbox's type is array
         bbox = map(float, annotation[1:])
-        # gt. each row mean bounding box
+        bbox = map(int,bbox)
+        # gt. each row mean bounding box, each image not only have one gt
         boxes = np.array(bbox, dtype=np.float32).reshape(-1, 4)
         #load image
         img = cv2.imread(os.path.join(srcDataSet, imPath + '.jpg'))
         idx += 1
         height, width, channel = img.shape
+        # draw rectangle
+        # cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (28, 28, 28), 4)
+
 
         # 1. NEG: random to crop negative sample image
         negNum = 0
@@ -53,6 +59,7 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
                 continue
             # crop sample image
             cropped_im = img[ny : ny + size, nx : nx + size, :]
+            # cv2.rectangle(img, (nx, ny), (nx+size, ny+size), (0, 0, 255), 4)
             resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
             # now to save it
             save_file = os.path.join(saveFolder, "neg", "%s.jpg"%nIdx)
@@ -80,10 +87,12 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
                 if nx1 + size > width or ny1 + size > height:
                     continue
                 crop_box = np.array([nx1, ny1, nx1 + size, ny1 + size])
+
                 Iou = IoU(crop_box, boxes)
                 if np.max(iou) >= 0.3:
                     continue
                 cropped_im = img[ny1: ny1 + size, nx1: nx1 + size, :]
+                # cv2.rectangle(img, (nx1, ny1), (nx1 + size, ny1 + size), (144, 20, 255), 4)
                 resized_im = cv2.resize(cropped_im, (12, 12), interpolation=cv2.INTER_LINEAR)
                 save_file = os.path.join(saveFolder, "neg", "%s.jpg"%nIdx)
                 saveFiles['neg'].write(save_file + ' 0\n')
@@ -104,7 +113,7 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
                 ny2 = ny1 + size
 
                 if nx2 > width or ny2 > height:
-                    continue 
+                    continue
                 crop_box = np.array([nx1, ny1, nx2, ny2])
                 #yu gt de offset
                 offset_x1 = (x1 - nx1) / float(size)
@@ -121,13 +130,16 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
                     save_file = os.path.join(saveFolder, "pos", "%s.jpg"%pIdx)
                     saveFiles['pos'].write(save_file + ' 1 %.2f %.2f %.2f %.2f\n'%(offset_x1, offset_y1, offset_x2, offset_y2))
                     cv2.imwrite(save_file, resized_im)
+                    # cv2.rectangle(img, (int(nx1), int(ny1)), (int(nx2), int(ny2)), (78, 238, 148), 4)
                     pIdx += 1
                 elif IoU(crop_box, box_) >= 0.4:
                     save_file = os.path.join(saveFolder, "part", "%s.jpg"%dIdx)
                     saveFiles['part'].write(save_file + ' -1 %.2f %.2f %.2f %.2f\n'%(offset_x1, offset_y1, offset_x2, offset_y2))
                     cv2.imwrite(save_file, resized_im)
+                    # cv2.rectangle(img, (int(nx1), int(ny1)), (int(nx2), int(ny2)), (0, 238, 238), 4)
                     dIdx += 1
         printStr = "\r[{}] pos: {}  neg: {}  part:{}".format(idx, pIdx, nIdx, dIdx)
+        # cv2.imwrite("001_new.jpg",img)
         sys.stdout.write(printStr)
         sys.stdout.flush()
     for f in saveFiles.values():
@@ -136,4 +148,8 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
 
 
 if __name__ == "__main__":
+
     gen_hard_bbox_pnet("dataset/WIDER_train/images/", "dataset/wider_face_train.txt")
+
+    # just do 1 image for test
+    # gen_hard_bbox_pnet("dataset/WIDER_train/images/", "dataset/wider_face_train_tiny.txt")

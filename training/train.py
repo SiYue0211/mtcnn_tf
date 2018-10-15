@@ -28,7 +28,7 @@ def train_model(baseLr, loss, data_num):
     boundaries = [int(epoch * data_num / config.BATCH_SIZE) for epoch in config.LR_EPOCH]
     #lr_values[0.01,0.001,0.0001,0.00001]
     lr_values = [baseLr * (lr_factor ** x) for x in range(0, len(config.LR_EPOCH) + 1)]
-    #control learning rate
+    #decaying the learning rate
     lr_op = tf.train.piecewise_constant(global_step, boundaries, lr_values)
     optimizer = tf.train.MomentumOptimizer(lr_op, 0.9)
     train_op = optimizer.minimize(loss, global_step)
@@ -58,6 +58,17 @@ def random_flip_images(image_batch,label_batch,landmark_batch):
     return image_batch,landmark_batch
 
 def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01, gpus=""):
+    """
+
+    :param netFactory: net stage
+    :param modelPrefix: model path
+    :param endEpoch: epoch num
+    :param dataPath: data path
+    :param display:
+    :param baseLr: lr
+    :param gpus:
+    :return:
+    """
     net = modelPrefix.split('/')[-1]
     print("Now start to train...stage: %s"%(net))
     # set GPU
@@ -101,8 +112,9 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     label = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE], name='label')
     bbox_target = tf.placeholder(tf.float32, shape=[config.BATCH_SIZE, 4], name='bbox_target')
     landmark_target = tf.placeholder(tf.float32,shape=[config.BATCH_SIZE,10],name='landmark_target')
+
     #class,regression
-    cls_loss_op,bbox_loss_op,landmark_loss_op,L2_loss_op,accuracy_op = netFactory(input_image, label, bbox_target,landmark_target,training=True)
+    cls_loss_op, bbox_loss_op, landmark_loss_op, L2_loss_op, accuracy_op = netFactory(input_image, label, bbox_target,landmark_target,training=True)
     #train,update learning rate(3 loss)
     train_op, lr_op = train_model(baseLr, ratio_cls_loss*cls_loss_op + ratio_bbox_loss*bbox_loss_op + ratio_landmark_loss*landmark_loss_op + L2_loss_op, total_num)
     # init
@@ -113,13 +125,13 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     saver = tf.train.Saver(max_to_keep=0)
     sess.run(init)
     #visualize some variables
-    tf.summary.scalar("cls_loss",cls_loss_op)#cls_loss
-    tf.summary.scalar("bbox_loss",bbox_loss_op)#bbox_loss
-    tf.summary.scalar("landmark_loss",landmark_loss_op)#landmark_loss
-    tf.summary.scalar("cls_accuracy",accuracy_op)#cls_acc
+    tf.summary.scalar("cls_loss", cls_loss_op)#cls_loss
+    tf.summary.scalar("bbox_loss", bbox_loss_op)#bbox_loss
+    tf.summary.scalar("landmark_loss", landmark_loss_op)#landmark_loss
+    tf.summary.scalar("cls_accuracy", accuracy_op)#cls_acc
     summary_op = tf.summary.merge_all()
     logs_dir = os.path.join(rootPath, "tmp", "logs", net)
-    if os.path.exists(logs_dir) == False:
+    if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
     writer = tf.summary.FileWriter(logs_dir, sess.graph)
     #begin 
@@ -153,7 +165,7 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
             
             if (step+1) % display == 0:
                 #acc = accuracy(cls_pred, labels_batch)
-                cls_loss, bbox_loss,landmark_loss,L2_loss,lr,acc = sess.run([cls_loss_op, bbox_loss_op,landmark_loss_op,L2_loss_op,lr_op,accuracy_op],
+                cls_loss, bbox_loss, landmark_loss, L2_loss, lr, acc = sess.run([cls_loss_op, bbox_loss_op, landmark_loss_op, L2_loss_op, lr_op, accuracy_op],
                                                              feed_dict={input_image: image_batch_array, label: label_batch_array, bbox_target: bbox_batch_array, landmark_target: landmark_batch_array})                
                 print("%s [%s] Step: %d, accuracy: %3f, cls loss: %4f, bbox loss: %4f, landmark loss: %4f,L2 loss: %4f,lr:%f " % (
                 datetime.now(), net, step+1, acc, cls_loss, bbox_loss, landmark_loss, L2_loss, lr))

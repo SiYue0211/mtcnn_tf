@@ -70,7 +70,7 @@ def bbox_ohem_orginal(bbox_pred,bbox_target,label):
     return tf.reduce_mean(square_error)
 
 #label=1 or label=-1 then do regression
-def bbox_ohem(bbox_pred,bbox_target,label):
+def bbox_ohem(bbox_pred, bbox_target, label):
     zeros_index = tf.zeros_like(label, dtype=tf.float32)
     ones_index = tf.ones_like(label,dtype=tf.float32)
     valid_inds = tf.where(tf.equal(tf.abs(label), 1),ones_index,zeros_index)
