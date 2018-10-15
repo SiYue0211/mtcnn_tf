@@ -61,13 +61,15 @@ def getBboxLandmarkFromTxt(txt, with_landmark=True):
             bbox: [left, right, top, bottom]
             landmark: [(x1, y1), (x2, y2), ...]
     """
+    assert os.path.exists(txt)
     dirname = os.path.dirname(txt)
+
     for line in open(txt, 'r'):
         line = line.strip()
         components = line.split(' ')
         img_path = os.path.join(dirname, components[0]) # file path
         # bounding box, (x1, y1, x2, y2)
-        bbox = (components[1], components[3], components[2], components[4])        
+        bbox = (components[1], components[3], components[2], components[4])
         bbox = [float(_) for _ in bbox]
         bbox = map(int, bbox)
         # landmark
@@ -143,3 +145,4 @@ class BBox(object):
         top = self.top + topDelta
         bottom = self.top + bottomDelta
         return BBox([left, right, top, bottom])
+
