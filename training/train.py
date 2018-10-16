@@ -130,8 +130,8 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     if restore:
         checkpoint_path = os.path.join(os.path.dirname(modelPrefix), 'checkpoint')
         ckpt = tf.train.get_checkpoint_state(checkpoint_path)
-        print 'Restore from {} ...'.format(checkpoint_path)
-        saver.restore(sess, checkpoint_path)
+        print 'Restore from {} ...'.format(ckpt.model_checkpoint_path)
+        saver.restore(sess, ckpt.model_checkpoint_path)
     #visualize some variables
     tf.summary.scalar("cls_loss", cls_loss_op)#cls_loss
     tf.summary.scalar("bbox_loss", bbox_loss_op)#bbox_loss
