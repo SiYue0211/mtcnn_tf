@@ -119,18 +119,15 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     #train,update learning rate(3 loss)
     train_op, lr_op = train_model(baseLr, ratio_cls_loss*cls_loss_op + ratio_bbox_loss*bbox_loss_op + ratio_landmark_loss*landmark_loss_op + L2_loss_op, total_num)
     # init
-    if restore:
-        tf.reset_default_graph()
-    else:
-        init = tf.global_variables_initializer()
-
+    init = tf.global_variables_initializer()
     gpu_options = tf.GPUOptions(allow_growth=True)
-    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    #save model
+    # save model
     saver = tf.train.Saver(max_to_keep=0)
-    if not restore:
-        sess.run(init)
-    else:
+
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    sess.run(init)
+
+    if restore:
         checkpoint_path = os.path.join(modelPrefix, 'checkpoint')
         ckpt = tf.train.get_checkpoint_state(checkpoint_path)
         print 'Restore from {} ...'.format(checkpoint_path)
