@@ -57,7 +57,7 @@ def random_flip_images(image_batch,label_batch,landmark_batch):
         
     return image_batch,landmark_batch
 
-def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01, gpus=""):
+def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01, gpus="", restore=False):
     """
 
     :param netFactory: net stage
@@ -67,6 +67,7 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     :param display:
     :param baseLr: lr
     :param gpus:
+    :param restore: whether restore checkpoint
     :return:
     """
     net = modelPrefix.split('/')[-1]
@@ -114,16 +115,26 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     landmark_target = tf.placeholder(tf.float32,shape=[config.BATCH_SIZE,10],name='landmark_target')
 
     #class,regression
-    cls_loss_op, bbox_loss_op, landmark_loss_op, L2_loss_op, accuracy_op = netFactory(input_image, label, bbox_target,landmark_target,training=True)
+    cls_loss_op, bbox_loss_op, landmark_loss_op, L2_loss_op, accuracy_op = netFactory(input_image, label, bbox_target, landmark_target, training=True)
     #train,update learning rate(3 loss)
     train_op, lr_op = train_model(baseLr, ratio_cls_loss*cls_loss_op + ratio_bbox_loss*bbox_loss_op + ratio_landmark_loss*landmark_loss_op + L2_loss_op, total_num)
     # init
-    init = tf.global_variables_initializer()
+    if restore:
+        tf.reset_default_graph()
+    else:
+        init = tf.global_variables_initializer()
+
     gpu_options = tf.GPUOptions(allow_growth=True)
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     #save model
     saver = tf.train.Saver(max_to_keep=0)
-    sess.run(init)
+    if not restore:
+        sess.run(init)
+    else:
+        checkpoint_path = os.path.join(modelPrefix, 'checkpoint')
+        ckpt = tf.train.get_checkpoint_state(checkpoint_path)
+        print 'Restore from {} ...'.format(checkpoint_path)
+        saver.restore(sess, checkpoint_path)
     #visualize some variables
     tf.summary.scalar("cls_loss", cls_loss_op)#cls_loss
     tf.summary.scalar("bbox_loss", bbox_loss_op)#bbox_loss
@@ -196,6 +207,7 @@ def parse_args():
                         default=100, type=int)
     parser.add_argument('--lr', dest='lr', help='base learning rate',
                         default=0.01, type=float)
+    parser.add_argument('--restore', dest='restore', help='whether restore checkpoint', type=bool)
     args = parser.parse_args()
     return args
 
@@ -210,5 +222,5 @@ if __name__ == "__main__":
         os.makedirs(os.path.dirname(modelPrefix))
     
     _net = {'pnet': P_Net, 'rnet': R_Net, 'onet': O_Net}
-    train(_net[args.stage], modelPrefix, args.epoch, dataPath, display=args.display, baseLr=args.lr, gpus=args.gpus)
+    train(_net[args.stage], modelPrefix, args.epoch, dataPath, display=args.display, baseLr=args.lr, gpus=args.gpus, restore=args.restore)
 
