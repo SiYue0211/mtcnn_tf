@@ -128,7 +128,7 @@ def train(netFactory, modelPrefix, endEpoch, dataPath, display=200, baseLr=0.01,
     sess.run(init)
 
     if restore:
-        checkpoint_path = os.path.join(modelPrefix, 'checkpoint')
+        checkpoint_path = os.path.join(os.path.dirname(modelPrefix), 'checkpoint')
         ckpt = tf.train.get_checkpoint_state(checkpoint_path)
         print 'Restore from {} ...'.format(checkpoint_path)
         saver.restore(sess, checkpoint_path)
