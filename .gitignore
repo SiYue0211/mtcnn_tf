@@ -1,8 +1,5 @@
 *.pyc
-dataset/WIDER_train
-dataset/lfw_5590
-dataset/net_7876
-testing/results_onet
-testing/results_pnet
-testing/results_rnet
+dataset
+practice
 tmp
+.idea

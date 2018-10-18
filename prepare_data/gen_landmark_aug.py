@@ -147,5 +147,5 @@ if __name__ == "__main__":
     if stage not in ['pnet', 'rnet', 'onet']:
         raise Exception("Please specify stage by --stage=pnet or rnet or onet")
     # augment: data augmentation
-    gen_landmark_data("dataset/train/trainImageList.txt", stage, augment=True)
+    gen_landmark_data("dataset/trainImageList.txt", stage, augment=True)
     # gen_landmark_data("dataset/train/trainImageListTiny.txt", stage, augment=True)
