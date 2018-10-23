@@ -185,6 +185,7 @@ class MtcnnDetector(object):
             #cls_cls_map : H*w*2
             #reg: H*w*4
             cls_cls_map, reg = self.pnet_detector.predict(im_resized)
+            # boxes是原始图片维度的
             #boxes: num*9(x1,y1,x2,y2,score,x1_offset,y1_offset,x2_offset,y2_offset)
             boxes = self.generate_bbox(cls_cls_map[:, :,1], reg, current_scale, self.thresh[0])
 

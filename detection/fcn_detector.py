@@ -24,7 +24,8 @@ class FcnDetector(object):
             #contains landmark
             self.cls_prob, self.bbox_pred, _ = net_factory(image_reshape, training=False)
             
-            #allow 
+            #allow
+            # allow_soft_placement：如果你指定的设备不存在，允许tf自动分配设备
             self.sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, gpu_options=tf.GPUOptions(allow_growth=True)))
             saver = tf.train.Saver()
             #check whether the dictionary is valid
@@ -34,6 +35,7 @@ class FcnDetector(object):
             assert  readstate, "the params dictionary is not valid"
             print("Restore param from: ", model_path)
             saver.restore(self.sess, model_path)
+
     def predict(self, databatch):
         height, width, _ = databatch.shape
         # print(height, width)

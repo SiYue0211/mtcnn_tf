@@ -130,6 +130,7 @@ def test_net(batch_size, stage, thresh, min_face_size, stride):
     detectors = [None, None, None]
     if stage in ["rnet", "onet"]:
         modelPath = os.path.join(rootPath, 'tmp/model/pnet/')
+        # 第几个checkpoint
         a = [b[5:-6] for b in os.listdir(modelPath) if b.startswith('pnet-') and b.endswith('.index')]
         maxEpoch = max(map(int, a))
         modelPath = os.path.join(modelPath, "pnet-%d"%(maxEpoch))
@@ -146,13 +147,16 @@ def test_net(batch_size, stage, thresh, min_face_size, stride):
         detectors[1] = RNet
     # read annatation(type:dict)
     widerImagesPath = os.path.join(rootPath, "dataset", "WIDER_train", "images")
-    annoTxtPath = os.path.join(rootPath, "dataset", "wider_face_train_bbx_gt.txt")
+    # annoTxtPath = os.path.join(rootPath, "dataset", "wider_face_train_bbx_gt.txt")
+    annoTxtPath = os.path.join(rootPath, 'dataset', 'wider_face_train_bbx_gt_tiny.txt')
+    # data['images'], data['bboxes']
     data = read_wider_annotation(widerImagesPath, annoTxtPath)
     mtcnn_detector = MtcnnDetector(detectors=detectors, min_face_size=min_face_size,
                                    stride=stride, threshold=thresh)
     test_data = TestLoader(data['images'])
     # do detect
     detections, _ = mtcnn_detector.detect_face(test_data)
+    print('detections size:', detections)
     # save detect result
     save_path = os.path.join(rootPath, "tmp/data", stage)
     if not os.path.exists(save_path):

@@ -148,8 +148,6 @@ def gen_hard_bbox_pnet(srcDataSet, srcAnnotations):
 
 
 if __name__ == "__main__":
-
     gen_hard_bbox_pnet("dataset/WIDER_train/images/", "dataset/wider_face_train.txt")
-
     # just do 1 image for test
     # gen_hard_bbox_pnet("dataset/WIDER_train/images/", "dataset/wider_face_train_tiny.txt")
