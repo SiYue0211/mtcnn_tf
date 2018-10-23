@@ -147,8 +147,7 @@ def test_net(batch_size, stage, thresh, min_face_size, stride):
         detectors[1] = RNet
     # read annatation(type:dict)
     widerImagesPath = os.path.join(rootPath, "dataset", "WIDER_train", "images")
-    # annoTxtPath = os.path.join(rootPath, "dataset", "wider_face_train_bbx_gt.txt")
-    annoTxtPath = os.path.join(rootPath, 'dataset', 'wider_face_train_bbx_gt_tiny.txt')
+    annoTxtPath = os.path.join(rootPath, "dataset", "wider_face_train_bbx_gt.txt")
     # data['images'], data['bboxes']
     data = read_wider_annotation(widerImagesPath, annoTxtPath)
     mtcnn_detector = MtcnnDetector(detectors=detectors, min_face_size=min_face_size,
@@ -156,7 +155,6 @@ def test_net(batch_size, stage, thresh, min_face_size, stride):
     test_data = TestLoader(data['images'])
     # do detect
     detections, _ = mtcnn_detector.detect_face(test_data)
-    print('detections size:', detections)
     # save detect result
     save_path = os.path.join(rootPath, "tmp/data", stage)
     if not os.path.exists(save_path):
