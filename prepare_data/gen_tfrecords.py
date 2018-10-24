@@ -111,7 +111,7 @@ def gen_tfrecords(net, shuffling=False):
         # write the data to tfrecord
         with tf.python_io.TFRecordWriter(tfFileName) as tfrecord_writer:
             for i, image_example in enumerate(dataset):
-                if i % 100 == 0:
+                if i % 1 == 0:
                     sys.stdout.write('\rConverting[%s]: %d/%d' % (net, i + 1, len(dataset)))
                     sys.stdout.flush()
                 filename = image_example['filename']
