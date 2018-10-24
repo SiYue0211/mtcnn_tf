@@ -116,7 +116,7 @@ def gen_tfrecords(net, shuffling=False):
                     sys.stdout.flush()
                 filename = image_example['filename']
                 __add_to_tfrecord(filename, image_example, tfrecord_writer)
-        tfrecord_writer.close()
+        # tfrecord_writer.close()
         print('\n')
     saveFolder = os.path.join(rootPath, "tmp/data/%s/"%(net))
     #tfrecord name 
@@ -127,6 +127,7 @@ def gen_tfrecords(net, shuffling=False):
         for n in ['pos', 'neg', 'part', 'landmark']:
             tfFileName = os.path.join(saveFolder, "%s.tfrecord"%(n))
             _gen(tfFileName, net, n, shuffling)
+            print("n: {} net: {}".format(n, net))
     # Finally, write the labels file:
     print('\nFinished converting the MTCNN dataset!')
     print('All tf record was saved in %s'%(saveFolder))
@@ -150,4 +151,5 @@ if __name__ == "__main__":
     if args.gpus:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
     gen_tfrecords(stage, True)
+    print('siyue _____')
 
